@@ -1,0 +1,116 @@
+= 自訂 Annotation
+林爾家 <jack@tist.com.tw>
+v1.0, 2019-11-25
+:icons: font
+
+== Annotation
+
+* 提供編譯器或分析工具資訊
+
+** @Override
+
+** @Deprecated
+
+NOTE: 對程式本身不會有影響
+
+== 告知編譯器如何處理annotation
+
+* @Retention -- 編譯完的後續處理
+
+** SOURCE -- 編譯完後不會出現在class檔案內，只會出現在程式碼裡
+
+** CLASS -- 編譯完後會存在class檔案內，但執行時VM不能取得
+
+** RUNTIME -- 編譯完後存在class檔案內，且執行時VM可以取得並使用
+
+NOTE: 除非有打算另外使用程式讀取編譯後的 bytecode， 不然不建議使用 CLASS
+
+WARNING: 如果不寫 Retention Policy的話預設是CLASS
+
+* @Target -- 限定 Annotation 使用對象
+
+** TYPE -- Class, Enum, Interface 等
+
+** FIELD -- Field, 也就是類別中宣告的物件之類的
+
+** METHOD -- 類別中的方法
+
+** PARAMETER -- 方法的變數
+
+** CONSTRUCTOR -- 建構子
+
+** LOCAL_VARIABLE -- 方法內的區域變數
+
+** PACKAGE -- 對整個package
+
+* @Documented -- 在產生 Java doc 文件時將 annotation 也一起寫進去
+
+NOTE: 使用 @Documented 的 Retention Policy 必須為 RUNTIME
+
+* @Inherited 讓子類別可以繼承父類別有使用這個標註宣告的 annotation
+
+== 一般 Annotation 宣告
+
+[source,java]
+----
+@Retention(RetentionPolicy.RUNTIME) // <1>
+@Target(ElementType.FIELD) // <2>
+public @interface SetValue {
+    String value() default "default"; // <3> <4>
+}
+----
+<1> Retention policy 使用RUNTIME讓VM可以在執行時間取得
+<2> 告知編譯器這個 annotation 適用在 field
+<3> annotation 的變數
+<4> default 代表呼叫annotation如果沒有給他值的時候的預設值
+
+== Annotation 使用
+
+[source,java]
+----
+public class Utils {
+    public static void inject(Object instance) {
+        Field[] fields = instance.getClass().getDeclaredFields(); //<1>
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(SetValue.class)) {
+                SetValue setValue = field.getAnnotation(SetValue.class); //<2>
+                field.setAccessible(true); //<3>
+                try {
+                    field.set(instance, setValue.value()); //<4>
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
+----
+<1> 取得宣告的所有 field
+<2> 對每個 field 取得它的 annotation
+<3> 對每個 field 設定存取權限
+<4> 將 annotation 的值設定回 field 中
+
+== Spring Annotation With Bean Post-Processor
+
+* 主要針對 Bean 注入
+
+** 同一個 Bean 重複使用而非建立許多實體
+
+== Java Reflection
+
+* 在執行時修改類別、介面或方法的api
+
+** getClass()
+
+** getConstructor()
+
+** getMethod()
+
+== 參考資料
+
+. https://github.com/JustinSDK/JavaSE6Tutorial/blob/master/docs/CH17.md[Java SE6 tutorial -- JustinSDK github]
+. https://en.wikipedia.org/wiki/Java_annotation[Java Annotation -- Wiki]
+. https://www.baeldung.com/java-custom-annotation[Creating a Custom Annotation in Java -- Baeldung]
+. https://www.baeldung.com/spring-annotation-bean-pre-processor[A Spring Custom Annotation for a Better DAO -- Baeldung]
+. https://www.geeksforgeeks.org/reflection-in-java/[Reflection in Java -- GeeksforGeeks]
+. https://docs.oracle.com/javase/tutorial/reflect/index.html[The Reflection API -- Oracle Java Documentation]
