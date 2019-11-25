@@ -10,14 +10,14 @@ import java.lang.reflect.Method;
  * @author Jack Lin
  */
 public class Utils {
-    public static void inject(Object instance) {
-        Field[] fields = instance.getClass().getDeclaredFields();
+    public static void inject(Object obj) {
+        Field[] fields = obj.getClass().getDeclaredFields();
         for (Field field : fields) {
             if (field.isAnnotationPresent(SetValue.class)) {
                 SetValue setValue = field.getAnnotation(SetValue.class);
                 field.setAccessible(true);
                 try {
-                    field.set(instance, setValue.value());
+                    field.set(obj, setValue.value());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -19,17 +19,9 @@ public class PersonNameAnnotationProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        scanDataAccessAnnotation(bean, beanName);
-        return bean;
-    }
-
-    private void scanDataAccessAnnotation(Object bean, String beanname) {
-        configureFieldInjection(bean);
-    }
-
-    private void configureFieldInjection(Object bean) {
         Class<?> managedBeanClass = bean.getClass();
         ReflectionUtils.FieldCallback fieldCallback = new PersonNameFieldCallback(bean);
         ReflectionUtils.doWithFields(managedBeanClass, fieldCallback);
+        return bean;
     }
 }

@@ -17,10 +17,6 @@ class AnnotationSpringApplicationTests {
     private Person person;
 
     @Test
-    void contextLoads() {
-    }
-
-    @Test
     @DisplayName("基本Annotation")
     public void testSimpleAnnotation() {
         Demo demo = new Demo();
