@@ -68,6 +68,25 @@ public @interface SetValue {
 
 [source,java]
 ----
+public class Demo{
+    @SetValue
+    private String annotatedWithoutValue;
+    @SetValue("abc")
+    private String annotatedWithValue;
+
+    @FunctionAnnotation
+    public void printValue() {
+        Utils.inject(this);
+        System.out.println("default value = " + annotatedWithoutValue);
+        System.out.println("input value = " + annotatedWithValue);
+    }
+}
+----
+
+== Annotation 處理
+
+[source,java]
+----
 public class Utils {
     public static void inject(Object instance) {
         Field[] fields = instance.getClass().getDeclaredFields(); //<1>
