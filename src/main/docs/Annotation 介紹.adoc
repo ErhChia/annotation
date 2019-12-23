@@ -1,0 +1,198 @@
+= Annotation簡單介紹
+林爾家 <jack@tist.com.tw>
+v 1.1, 2019-12-23
+:icons: font
+
+== @Value
+
+* 使用範圍：物件、方法、參數、annotation
+
+* 將數值注入到物件中
+
+[source,java]
+----
+@Value("some string")
+private String someString;
+----
+
+* 從設定檔案中讀取相對應數值並注入到物件中
+
+[source,java]
+----
+@Value("${setting.string:defaultValue}")
+private String valueFromSetting;
+
+@Value("${setting.boolean:false}")
+private Boolean booleanFromSetting;
+
+@Value("${setting.array:a,2,three}")
+private String[] arrayFromSetting;
+----
+
+* 從 Bean 中的某個物件取值
+
+[source,java]
+----
+@Value("#{someBean.someValue}")
+private String valueFromBean
+----
+
+== @ConfigurationProperties
+
+* 使用範圍：類別、方法
+
+* 從設定檔中讀取相對應 prefix 的資料放到相對應的欄位中
+
+[source,java]
+----
+@ConfigurationProperties(prefix = "some.setting")
+public class SomeConfig {
+    private String name;
+}
+----
+
+* 從 Bean 讀取 property
+
+[source,java]
+----
+@Bean
+@ConfigurationProperties("item")
+public Item item() {
+    return new Item();
+}
+----
+
+== @PostConstruct
+
+* 被標註的方法只會在系統被建立起來時執行一次
+
+* 被標註的方法不能有參數且不能有回傳值
+
+* 一個類別裡只能有一個方法被標註成 PostConstruct
+
+* 被標註的方法不能為 static
+
+[source,java]
+----
+public class SomeClass {
+    @PostConstruct
+    public void init(){}
+}
+----
+
+== JPA Listener
+
+|===
+|Annotation |說明
+
+|@PrePersist |儲存前呼叫
+
+|@PostPersist |儲存後呼叫
+
+|@PostLoad |查詢、讀取後呼叫
+
+|@PreUpdate |更新資料前呼叫
+
+|@PostUpdate |更新資料後呼叫
+
+|@PreRemove |刪除前呼叫
+
+|@PostRemove |刪除後呼叫
+|===
+
+NOTE: 這些標註會用在方法上，而這些方法會在 Entity 的相對應的生命週期被呼叫
+
+* 可以直接寫在 Entity 內的方法上， 例如
+
+[source,java]
+----
+    @PostPersist
+    @PostUpdate
+    @PreUpdate
+    public void someFunction() {
+        //do something
+    }
+----
+
+* 但通常會搭配 @EntityListeners 寫一個 ListenerClass 來使用
+
+[source,java]
+.SomeClass.java
+----
+@EntityListeners(SomeListener.class)
+public class SomeClass {
+
+}
+----
+
+[source,java]
+.SomeListener.java
+----
+public class SomeListener {
+    @PostPersist
+    @PostUpdate
+    @PreUpdate
+    public void someFunction() {
+        //do something
+    }
+}
+----
+
+== Project Lombok
+
+* @Getter/@Setter
+
+** 產生物件的 getter 和 setter
+
+** 可以放在類別上對類別裡所有的物件產生或者放在物件上只對該物件產生
+
+* @ToString
+
+** 將類別中的物件轉成字串輸出
+
+* @EqualsAndHashCode
+
+** 產生類別的 equals 和 hashCode 方法
+
+** 和 @ToString 都有 callSuper 和 doNotUseGetters 的參數
+
+*** callSuper --
+呼叫父類別的 toString, equals 和 hashCode 方法，預設為 false
+
+*** doNotUseGetters -- 是否使用 getter 取得父類別物件，預設為 false
+
+* @Data
+
+** 產生上述的所有方法
+
+[NOTE]
+====
+
+如果有繼承其他類別並且有使用 @Data 的話系統會建議加上 @EqualsAndHashCode 並把 callSuper 設為true
+
+====
+
+== 參考資料
+
+. https://www.baeldung.com/spring-value-annotation[Baeldung -- A Quick Guide to Spring @Value]
+
+. https://www.baeldung.com/configuration-properties-in-spring-boot[Baeldung -- Guide to @ConfigurationProperties in Spring Boot]
+
+. https://stackoverflow.com/questions/43232021/using-configurationproperties-annotation-on-bean-method[stackoverflow --
+Using @ConfigurationProperties annotation on @Bean Method]
+
+. https://docs.oracle.com/javaee/7/api/javax/annotation/PostConstruct.html[Oracle docs -- Annotation Type PostConstruct]
+
+. https://docs.jboss.org/hibernate/core/4.0/hem/en-US/html/listeners.html[Hibernate Community Documentation
+-- Chapter 6. Entity listeners and Callback methods]
+
+. https://openhome.cc/Gossip/EJB3Gossip/EntityLifeCycleListener.html[OpenHome.cc --
+Entity 生命週期攔截器]
+
+. https://projectlombok.org/features/GetterSetter[Project Lombok -- @Getter and @Setter]
+
+. https://projectlombok.org/features/ToString[Project Lombok -- @ToString]
+
+. https://projectlombok.org/features/EqualsAndHashCode[Project Lombok -- @EqualsAndHashCode]
+
+. https://projectlombok.org/features/Data[Project Lombok -- @Data]
